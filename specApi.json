@@ -1,0 +1,266 @@
+{
+  "user_management": [
+    {
+      "endpoint": "/api/register",
+      "method": "POST",
+      "description": "Registrasi pengguna baru",
+      "authentication": false,
+      "parameters": {
+        "body": ["name", "email", "password", "role (optional: user/admin)"]
+      }
+    },
+    {
+      "endpoint": "/api/login",
+      "method": "POST",
+      "description": "Login pengguna dan mendapatkan token JWT",
+      "authentication": false,
+      "parameters": {
+        "body": ["email", "password"]
+      }
+    },
+    {
+      "endpoint": "/api/users",
+      "method": "GET",
+      "description": "Mendapatkan daftar pengguna",
+      "authentication": "Admin",
+      "parameters": {
+        "query": ["limit", "offset"]
+      }
+    },
+    {
+      "endpoint": "/api/users/:id",
+      "method": "GET",
+      "description": "Mendapatkan detail pengguna berdasarkan ID",
+      "authentication": "Admin/User",
+      "parameters": {
+        "path": ["id"]
+      }
+    },
+    {
+      "endpoint": "/api/users/:id",
+      "method": "PUT",
+      "description": "Mengupdate informasi pengguna",
+      "authentication": "Admin/User",
+      "parameters": {
+        "body": ["name (optional)", "email (optional)", "password (optional)"]
+      }
+    },
+    {
+      "endpoint": "/api/users/:id",
+      "method": "DELETE",
+      "description": "Menghapus pengguna berdasarkan ID",
+      "authentication": "Admin",
+      "parameters": {
+        "path": ["id"]
+      }
+    }
+  ],
+  "event_management": [
+    {
+      "endpoint": "/api/events",
+      "method": "POST",
+      "description": "Membuat acara baru",
+      "authentication": "Organizer/Admin",
+      "parameters": {
+        "body": ["name", "date", "location", "description", "ticket_types"]
+      }
+    },
+    {
+      "endpoint": "/api/events",
+      "method": "GET",
+      "description": "Mendapatkan daftar acara",
+      "authentication": false,
+      "parameters": {
+        "query": ["limit", "offset", "date", "location"]
+      }
+    },
+    {
+      "endpoint": "/api/events/:id",
+      "method": "GET",
+      "description": "Mendapatkan detail acara berdasarkan ID",
+      "authentication": false,
+      "parameters": {
+        "path": ["id"]
+      }
+    },
+    {
+      "endpoint": "/api/events/:id",
+      "method": "PUT",
+      "description": "Mengupdate informasi acara",
+      "authentication": "Organizer/Admin",
+      "parameters": {
+        "body": ["name", "date", "location", "description", "ticket_types"]
+      }
+    },
+    {
+      "endpoint": "/api/events/:id",
+      "method": "DELETE",
+      "description": "Menghapus acara berdasarkan ID",
+      "authentication": "Organizer/Admin",
+      "parameters": {
+        "path": ["id"]
+      }
+    }
+  ],
+  "ticket_management": [
+    {
+      "endpoint": "/api/events/:id/tickets",
+      "method": "POST",
+      "description": "Membeli tiket untuk acara tertentu",
+      "authentication": "User",
+      "parameters": {
+        "body": ["ticket_type", "quantity", "payment_method"]
+      }
+    },
+    {
+      "endpoint": "/api/events/:id/tickets",
+      "method": "GET",
+      "description": "Mendapatkan daftar tipe tiket untuk acara",
+      "authentication": false,
+      "parameters": {
+        "path": ["id"]
+      }
+    },
+    {
+      "endpoint": "/api/tickets/:id",
+      "method": "GET",
+      "description": "Mendapatkan detail tiket berdasarkan ID",
+      "authentication": "User",
+      "parameters": {
+        "path": ["id"]
+      }
+    },
+    {
+      "endpoint": "/api/tickets/:id/checkin",
+      "method": "PUT",
+      "description": "Check-in peserta menggunakan QR code tiket",
+      "authentication": "Organizer",
+      "parameters": {
+        "path": ["id"],
+        "body": ["qr_code"]
+      }
+    }
+  ],
+  "payment_management": [
+    {
+      "endpoint": "/api/payments",
+      "method": "POST",
+      "description": "Melakukan pembayaran tiket",
+      "authentication": "User",
+      "parameters": {
+        "body": ["ticket_id", "payment_method", "amount"]
+      }
+    },
+    {
+      "endpoint": "/api/payments/:id/status",
+      "method": "GET",
+      "description": "Memeriksa status pembayaran",
+      "authentication": "User",
+      "parameters": {
+        "path": ["id"]
+      }
+    },
+    {
+      "endpoint": "/api/payments/refund",
+      "method": "POST",
+      "description": "Mengajukan refund pembayaran",
+      "authentication": "User",
+      "parameters": {
+        "body": ["payment_id", "reason"]
+      }
+    }
+  ],
+  "feedback_and_rating": [
+    {
+      "endpoint": "/api/events/:id/feedback",
+      "method": "POST",
+      "description": "Menambahkan feedback untuk acara tertentu",
+      "authentication": "User",
+      "parameters": {
+        "body": ["rating", "comment"]
+      }
+    },
+    {
+      "endpoint": "/api/events/:id/feedback",
+      "method": "GET",
+      "description": "Mendapatkan daftar feedback untuk acara",
+      "authentication": false,
+      "parameters": {
+        "path": ["id"],
+        "query": ["limit", "offset"]
+      }
+    }
+  ],
+  "notifications_and_reminders": [
+    {
+      "endpoint": "/api/events/:id/notify",
+      "method": "POST",
+      "description": "Mengirim notifikasi pengingat kepada peserta",
+      "authentication": "Organizer",
+      "parameters": {
+        "path": ["id"],
+        "body": ["message"]
+      }
+    },
+    {
+      "endpoint": "/api/notifications",
+      "method": "GET",
+      "description": "Mendapatkan daftar notifikasi pengguna",
+      "authentication": "User",
+      "parameters": {
+        "query": ["limit", "offset"]
+      }
+    }
+  ],
+  "dashboard_statistics": [
+    {
+      "endpoint": "/api/events/:id/statistics",
+      "method": "GET",
+      "description": "Mendapatkan statistik pendaftaran dan penjualan tiket",
+      "authentication": "Organizer/Admin",
+      "parameters": {
+        "path": ["id"]
+      }
+    },
+    {
+      "endpoint": "/api/statistics",
+      "method": "GET",
+      "description": "Mendapatkan statistik keseluruhan",
+      "authentication": "Admin",
+      "parameters": {
+        "query": ["date_range"]
+      }
+    }
+  ],
+  "participant_networking": [
+    {
+      "endpoint": "/api/events/:id/participants",
+      "method": "GET",
+      "description": "Mendapatkan daftar peserta untuk acara tertentu",
+      "authentication": "Organizer",
+      "parameters": {
+        "path": ["id"],
+        "query": ["limit", "offset"]
+      }
+    },
+    {
+      "endpoint": "/api/chat",
+      "method": "POST",
+      "description": "Mengirim pesan ke forum acara",
+      "authentication": "User",
+      "parameters": {
+        "body": ["event_id", "message"]
+      }
+    },
+    {
+      "endpoint": "/api/chat/:event_id",
+      "method": "GET",
+      "description": "Mendapatkan pesan dari forum acara tertentu",
+      "authentication": "User",
+      "parameters": {
+        "path": ["event_id"],
+        "query": ["limit", "offset"]
+      }
+    }
+  ]
+}
