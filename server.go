@@ -2,7 +2,10 @@ package main
 
 import (
 	"event-management-system/config"
+	"event-management-system/controller"
 	"event-management-system/models"
+	"event-management-system/repository"
+	"event-management-system/usecase"
 	"fmt"
 	"log"
 
@@ -14,12 +17,15 @@ import (
 var DB *gorm.DB
 
 type Server struct {
+	userUC usecase.UserUseCase
 	engine *gin.Engine
 	host   string
 }
 
 func (s *Server) initRoute() {
-	// rg := s.engine.Group("/api/v1")
+	rg := s.engine.Group("/api/v1")
+
+	controller.NewUserController(s.userUC, rg).Route()
 }
 
 func (s *Server) initMigration() {
@@ -53,10 +59,13 @@ func NewServer() *Server {
 		panic("connection error")
 	}
 
+	userRepo := repository.NewUserRepository(DB)
+	userUserCase := usecase.NewUserUseCase(userRepo)
 	engine := gin.Default()
 	host := fmt.Sprintf(":%s", cfg.ApiPort)
 
 	return &Server{
+		userUC: userUserCase,
 		engine: engine,
 		host:   host,
 	}
