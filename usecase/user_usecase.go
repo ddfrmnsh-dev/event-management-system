@@ -7,6 +7,7 @@ import (
 
 type UserUseCase interface {
 	FindAllUser() ([]models.User, error)
+	FindUserById(id int) (models.User, error)
 }
 
 type userUseCaseImpl struct {
@@ -24,4 +25,12 @@ func (uc *userUseCaseImpl) FindAllUser() ([]models.User, error) {
 	}
 
 	return users, nil
+}
+
+func (uc *userUseCaseImpl) FindUserById(id int) (models.User, error) {
+	var user models.User
+	if err := uc.userRepository.FindUserById(id); err != nil {
+		return user, err
+	}
+	return user, nil
 }
