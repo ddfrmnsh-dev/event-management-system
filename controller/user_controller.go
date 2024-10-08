@@ -2,6 +2,8 @@ package controller
 
 import (
 	"event-management-system/usecase"
+	modelUtil "event-management-system/utils/model_util"
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -26,16 +28,16 @@ func (uc *UserController) getAllUser(ctx *gin.Context) {
 	users, err := uc.userUseCase.FindAllUser()
 
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"err": "Failed to retrieve data books"})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"err": "Failed to retrieve data users"})
 		return
 	}
 
 	if len(users) > 0 {
-		ctx.JSON(http.StatusOK, users)
+		ctx.JSON(http.StatusOK, modelUtil.APIResponse("Ok", users, 200))
 		return
 	}
 
-	ctx.JSON(http.StatusOK, gin.H{"message": "List user empty"})
+	ctx.JSON(http.StatusOK, modelUtil.APIResponse("List user empty", nil, 200))
 }
 
 func (uc *UserController) getUserById(ctx *gin.Context) {
@@ -48,10 +50,11 @@ func (uc *UserController) getUserById(ctx *gin.Context) {
 	}
 	user, err := uc.userUseCase.FindUserById(id)
 
+	fmt.Println(user)
 	if err != nil {
-		ctx.JSON(http.StatusNotFound, gin.H{"err": err.Error()})
+		ctx.JSON(http.StatusNotFound, modelUtil.APIResponse(err.Error(), nil, 404))
 		return
 	}
 
-	ctx.JSON(http.StatusOK, user)
+	ctx.JSON(http.StatusOK, modelUtil.APIResponse("Succes Get User", user, 200))
 }

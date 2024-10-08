@@ -19,18 +19,19 @@ func NewUserUseCase(userRepository repository.UserRepository) UserUseCase {
 }
 
 func (uc *userUseCaseImpl) FindAllUser() ([]models.User, error) {
-	var users []models.User
-	if err := uc.userRepository.FindAllUser(&users); err != nil {
-		return nil, err
+	users, err := uc.userRepository.FindAll() // Mengambil semua pengguna dari repository
+	if err != nil {
+		return nil, err // Mengembalikan error jika ada
 	}
 
-	return users, nil
+	return users, nil // Mengembalikan slice pengguna
 }
 
 func (uc *userUseCaseImpl) FindUserById(id int) (models.User, error) {
-	var user models.User
-	if err := uc.userRepository.FindUserById(id); err != nil {
+	user, err := uc.userRepository.FindById(id)
+	if err != nil {
 		return user, err
 	}
+
 	return user, nil
 }

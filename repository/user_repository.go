@@ -3,39 +3,54 @@ package repository
 import (
 	"event-management-system/models"
 	"fmt"
-	"log"
 
 	"gorm.io/gorm"
 )
 
 type UserRepository interface {
-	FindAllUser(users *[]models.User) error
-	FindUserById(id int) error
+	FindAll() ([]models.User, error)
+	FindById(id int) (models.User, error)
+	Save(user models.User)
 }
 
 type userRepositoryImpl struct {
 	db *gorm.DB
 }
 
-func NewUserRepository(db *gorm.DB) UserRepository {
+func NewUserRepository(db *gorm.DB) *userRepositoryImpl {
 	return &userRepositoryImpl{db: db}
 }
 
-func (u *userRepositoryImpl) FindAllUser(users *[]models.User) error {
-	res := u.db.Find(&users)
+func (u *userRepositoryImpl) FindAll() ([]models.User, error) {
+	var users []models.User
+
+	res := u.db.Find(&users) // Mengisi slice users dengan data dari database
 	if res.Error != nil {
-		log.Printf(fmt.Sprintf("error fetching all user::%v", res.Error))
-		return nil
+		fmt.Println("err:", res.Error)
+		return nil, res.Error // Kembalikan error jika ada
 	}
 
-	return nil
+	if res.RowsAffected == 0 {
+		fmt.Println("no users found")
+		return users, nil // Jika tidak ada pengguna ditemukan, kembalikan slice kosong dan nil error
+	}
+
+	return users, nil // Mengembalikan slice users yang ditemukan dan nil error
 }
 
-func (u *userRepositoryImpl) FindUserById(id int) error {
+func (u *userRepositoryImpl) FindById(id int) (models.User, error) {
 	var user models.User
-	if err := u.db.First(&user, id).Error; err != nil {
-		return err
+
+	res := u.db.First(&user, id)
+	if res.Error != nil {
+		fmt.Println("err:", res.Error)
+		return user, res.Error // Kembalikan error jika ada
 	}
 
-	return nil
+	if res.RowsAffected == 0 {
+		fmt.Println("no users found")
+		return user, nil // Jika tidak ada pengguna ditemukan, kembalikan slice kosong dan nil error
+	}
+
+	return user, nil
 }
