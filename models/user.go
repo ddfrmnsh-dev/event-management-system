@@ -1,6 +1,8 @@
 package models
 
-import "time"
+import (
+	"time"
+)
 
 type User struct {
 	Id        int       `json:"id" gorm:"primaryKey"`
@@ -8,6 +10,11 @@ type User struct {
 	Email     string    `json:"email" gorm:"not null;size:255"`
 	Password  string    `json:"password" gorm:"not null;size:255"`
 	Role      string    `json:"role" gorm:"not null;size:50"`
+	IsActive  *bool     `json:"isActive" gorm:"default:false"`
 	CreatedAt time.Time `json:"createdAt" gorm:"default:current_timestamp"`
 	UpdatedAt time.Time `json:"updatedAt" gorm:"default:current_timestamp"`
+}
+
+type GetCustomerDetailInput struct {
+	Id string `uri:"id" binding:"required,numeric"`
 }
