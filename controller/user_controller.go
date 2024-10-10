@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"event-management-system/middleware"
 	"event-management-system/models"
 	"event-management-system/usecase"
 	modelUtil "event-management-system/utils/model_util"
@@ -13,16 +14,17 @@ import (
 )
 
 type UserController struct {
-	userUseCase usecase.UserUseCase
-	rg          *gin.RouterGroup
+	userUseCase    usecase.UserUseCase
+	rg             *gin.RouterGroup
+	authMiddleware middleware.AuthMiddleware
 }
 
-func NewUserController(userUseCase usecase.UserUseCase, rg *gin.RouterGroup) *UserController {
-	return &UserController{userUseCase: userUseCase, rg: rg}
+func NewUserController(userUseCase usecase.UserUseCase, rg *gin.RouterGroup, authMiddleware middleware.AuthMiddleware) *UserController {
+	return &UserController{userUseCase: userUseCase, rg: rg, authMiddleware: authMiddleware}
 }
 
 func (uc *UserController) Route() {
-	uc.rg.GET("/users", uc.getAllUser)
+	uc.rg.GET("/users", uc.authMiddleware.RequireToken("admin"), uc.getAllUser)
 	uc.rg.GET("/users/:id", uc.getUserById)
 	uc.rg.POST("/users", uc.createUser)
 	uc.rg.PUT("/users/:id", uc.updateUser)

@@ -18,3 +18,8 @@ type User struct {
 type GetCustomerDetailInput struct {
 	Id string `uri:"id" binding:"required,numeric"`
 }
+
+type InputLogin struct {
+	Identifier string `json:"usernameOrEmail" binding:"required"`
+	Password   string `json:"password" binding:"required"`
+}

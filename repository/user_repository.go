@@ -13,6 +13,9 @@ type UserRepository interface {
 	Save(user models.User) (models.User, error)
 	Update(user models.User) (models.User, error)
 	Delete(id int) (models.User, error)
+	FindByUsername(username string) (models.User, error)
+	FindByEmail(email string) (models.User, error)
+	FindBy(column, value string) (models.User, error)
 }
 
 type userRepositoryImpl struct {
@@ -52,6 +55,54 @@ func (u *userRepositoryImpl) FindById(id int) (models.User, error) {
 	if res.RowsAffected == 0 {
 		fmt.Println("no users found")
 		return user, nil
+	}
+
+	return user, nil
+}
+
+func (u *userRepositoryImpl) FindBy(column, value string) (models.User, error) {
+	var user models.User
+
+	res := u.db.Where(fmt.Sprintf("%s = ?", column), value).First(&user)
+	if res.Error != nil {
+		return user, res.Error
+	}
+
+	if res.RowsAffected == 0 {
+		return user, gorm.ErrRecordNotFound
+	}
+
+	return user, nil
+}
+
+func (u *userRepositoryImpl) FindByUsername(username string) (models.User, error) {
+	var user models.User
+
+	// Query berdasarkan username
+	res := u.db.Where("username = ?", username).First(&user)
+	if res.Error != nil {
+		return user, res.Error // Jika error selain "record not found", Gorm sudah mengembalikan error yang tepat
+	}
+
+	if res.RowsAffected == 0 {
+		// Kembalikan error bawaan Gorm jika tidak ada record yang ditemukan
+		return user, gorm.ErrRecordNotFound
+	}
+
+	return user, nil
+}
+
+func (u *userRepositoryImpl) FindByEmail(email string) (models.User, error) {
+	var user models.User
+
+	// Query berdasarkan email
+	res := u.db.Where("email = ?", email).First(&user)
+	if res.Error != nil {
+		return user, res.Error
+	}
+
+	if res.RowsAffected == 0 {
+		return user, gorm.ErrRecordNotFound
 	}
 
 	return user, nil

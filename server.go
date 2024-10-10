@@ -3,9 +3,11 @@ package main
 import (
 	"event-management-system/config"
 	"event-management-system/controller"
+	"event-management-system/middleware"
 	"event-management-system/models"
 	"event-management-system/repository"
 	"event-management-system/usecase"
+	"event-management-system/utils/service"
 	"fmt"
 	"log"
 
@@ -17,15 +19,20 @@ import (
 var DB *gorm.DB
 
 type Server struct {
-	userUC usecase.UserUseCase
-	engine *gin.Engine
-	host   string
+	userUC     usecase.UserUseCase
+	authUC     usecase.AuthenticationUseCase
+	jwtService service.JwtService
+	engine     *gin.Engine
+	host       string
 }
 
 func (s *Server) initRoute() {
-	rg := s.engine.Group("/api/v1")
+	rgAuth := s.engine.Group("/api/auth")
+	controller.NewAuthController(s.authUC, rgAuth).Route()
 
-	controller.NewUserController(s.userUC, rg).Route()
+	rgV1 := s.engine.Group("/api/v1")
+	authMiddleware := middleware.NewAuthMiddleware(s.jwtService)
+	controller.NewUserController(s.userUC, rgV1, authMiddleware).Route()
 }
 
 func (s *Server) initMigration() {
@@ -60,13 +67,17 @@ func NewServer() *Server {
 	}
 
 	userRepo := repository.NewUserRepository(DB)
-	userUserCase := usecase.NewUserUseCase(userRepo)
+	userUseCase := usecase.NewUserUseCase(userRepo)
+	jwtService := service.NewJwtService(cfg.TokenConfig)
+	authUseCase := usecase.NewAuthenticationUseCase(userUseCase, jwtService)
 	engine := gin.Default()
 	host := fmt.Sprintf(":%s", cfg.ApiPort)
 
 	return &Server{
-		userUC: userUserCase,
-		engine: engine,
-		host:   host,
+		userUC:     userUseCase,
+		authUC:     authUseCase,
+		engine:     engine,
+		jwtService: jwtService,
+		host:       host,
 	}
 }
