@@ -21,6 +21,7 @@ var DB *gorm.DB
 type Server struct {
 	userUC     usecase.UserUseCase
 	authUC     usecase.AuthenticationUseCase
+	eventUC    usecase.EventUseCase
 	jwtService service.JwtService
 	engine     *gin.Engine
 	host       string
@@ -32,12 +33,15 @@ func (s *Server) initRoute() {
 
 	rgV1 := s.engine.Group("/api/v1")
 	authMiddleware := middleware.NewAuthMiddleware(s.jwtService)
+
 	controller.NewUserController(s.userUC, rgV1, authMiddleware).Route()
+	controller.NewEventController(s.eventUC, rgV1, authMiddleware).Route()
 }
 
 func (s *Server) initMigration() {
 	err := DB.AutoMigrate(
 		&models.User{},
+		&models.Event{},
 	)
 
 	if err != nil {
@@ -67,7 +71,11 @@ func NewServer() *Server {
 	}
 
 	userRepo := repository.NewUserRepository(DB)
+	eventRepo := repository.NewEventRepository(DB)
+
 	userUseCase := usecase.NewUserUseCase(userRepo)
+	eventUseCase := usecase.NewEventUseCase(eventRepo)
+
 	jwtService := service.NewJwtService(cfg.TokenConfig)
 	authUseCase := usecase.NewAuthenticationUseCase(userUseCase, jwtService)
 	engine := gin.Default()
@@ -76,6 +84,7 @@ func NewServer() *Server {
 	return &Server{
 		userUC:     userUseCase,
 		authUC:     authUseCase,
+		eventUC:    eventUseCase,
 		engine:     engine,
 		jwtService: jwtService,
 		host:       host,
