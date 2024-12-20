@@ -40,7 +40,7 @@ func (a *authMiddleware) RequireToken(roles ...string) gin.HandlerFunc {
 
 		tokenClaim, err := a.jwtService.VerifyToken(token)
 
-		newId, _ := strconv.Atoi(tokenClaim.ID)
+		newId, _ := strconv.Atoi(tokenClaim.UserId)
 
 		if err != nil {
 			ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"message": "Unauhtorized"})

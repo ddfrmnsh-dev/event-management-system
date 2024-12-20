@@ -6,26 +6,6 @@ import (
 	"time"
 )
 
-// type Event struct {
-// 	Id           int        `json:"id" gorm:"primaryKey"`
-// 	EventUuid    string     `json:"eventUuid" gorm:"size:255"`
-// 	Name         string     `json:"name" gorm:"not null;size:255"`
-// 	Slug         string     `json:"slug" gorm:"not null;size:255"`
-// 	StatusEvent  string     `json:"statusEvent" gorm:"not null;size:255"`
-// 	StartDate    time.Time  `json:"startDate" gorm:"type:date;not null"`
-// 	EndDate      time.Time  `json:"endDate" gorm:"type:date;not null"`
-// 	StartTime    time.Time  `json:"startTime" gorm:"not null"`
-// 	EndTime      time.Time  `json:"endTime" gorm:"not null"`
-// 	Location     string     `json:"location" gorm:"not null;size:255"`
-// 	Address      string     `json:"address" gorm:"not null;size:255"`
-// 	Description  string     `json:"description" gorm:"not null"`
-// 	TicketTypes  string     `json:"ticketTypes" gorm:"not null;size:255"`
-// 	PathImage    string     `json:"pathImage" gorm:"not null"`
-// 	MinimumPrice int        `json:"minPrice" gorm:"not null"`
-// 	CreatedAt    time.Time  `json:"createdAt" gorm:"not null"`
-// 	UpdatedAt    *time.Time `json:"updatedAt" gorm:"autoUpdateTime:false"`
-// }
-
 type Event struct {
 	Id           int        `json:"id" form:"id" gorm:"primaryKey"`
 	EventUuid    string     `json:"eventUuid" form:"eventUuid" gorm:"size:255"`
@@ -44,7 +24,40 @@ type Event struct {
 	MinimumPrice int        `json:"minPrice" form:"minPrice" gorm:"not null"`
 	CreatedAt    time.Time  `json:"createdAt" form:"createdAt" gorm:"not null"`
 	UpdatedAt    *time.Time `json:"updatedAt" form:"updatedAt" gorm:"autoUpdateTime:false"`
+	UserID       int        `json:"userId" gorm:"not null"`
+	User         User       `gorm:"constraint:OnDelete:CASCADE;"`
 }
+
+// func FormatUserEvent(user User, event Event) Event {
+// 	formatter := Event{
+// 		Id:           event.Id,
+// 		EventUuid:    event.EventUuid,
+// 		Name:         event.Name,
+// 		Slug:         event.Slug,
+// 		StatusEvent:  event.StatusEvent,
+// 		StartDate:    event.StartDate,
+// 		EndDate:      event.EndDate,
+// 		StartTime:    event.StartTime,
+// 		EndTime:      event.EndTime,
+// 		Location:     event.Location,
+// 		Address:      event.Address,
+// 		Description:  event.Description,
+// 		TicketTypes:  event.TicketTypes,
+// 		PathImage:    event.PathImage,
+// 		MinimumPrice: event.MinimumPrice,
+// 		CreatedAt:    event.CreatedAt,
+// 		UpdatedAt:    event.UpdatedAt,
+// 		UserID:       event.UserID,
+// 		User: User{
+// 			Id:        user.Id,
+// 			Username:  user.Username,
+// 			IsActive:  user.IsActive,
+// 			CreatedAt: user.CreatedAt,
+// 			UpdatedAt: user.UpdatedAt,
+// 		},
+// 	}
+// 	return formatter
+// }
 
 type GetEventDetailInput struct {
 	Id string `uri:"id" binding:"required,numeric"`
@@ -83,7 +96,6 @@ func (e *Event) UnmarshalJSON(data []byte) error {
 	}
 
 	const dateFormat = "2006-01-02"
-	const timeFormat = "15:04"
 
 	// loc, err := time.LoadLocation("Asia/Jakarta")
 	// if err != nil {

@@ -84,7 +84,7 @@ func NewServer() *Server {
 	eventRepo := repository.NewEventRepository(DB)
 
 	userUseCase := usecase.NewUserUseCase(userRepo)
-	eventUseCase := usecase.NewEventUseCase(eventRepo)
+	eventUseCase := usecase.NewEventUseCase(eventRepo, userRepo)
 
 	jwtService := service.NewJwtService(cfg.TokenConfig)
 	schedulerJobs := jobs.NewSchedulerJobs(userUseCase)

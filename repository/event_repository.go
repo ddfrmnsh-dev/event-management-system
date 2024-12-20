@@ -12,6 +12,7 @@ type EventRepository interface {
 	FindById(id int) (models.Event, error)
 	Save(event models.Event) (models.Event, error)
 	Update(event models.Event) (models.Event, error)
+	Delete(id int) (models.Event, error)
 }
 
 type eventRepositoryImpl struct {
@@ -67,6 +68,11 @@ func (e *eventRepositoryImpl) Save(event models.Event) (models.Event, error) {
 		return event, res.Error
 	}
 
+	if err := e.db.Preload("User").First(&event, event.Id).Error; err != nil {
+		fmt.Println("err:", res.Error)
+		return event, res.Error
+	}
+
 	return event, nil
 }
 
@@ -79,4 +85,21 @@ func (e *eventRepositoryImpl) Update(event models.Event) (models.Event, error) {
 	}
 
 	return event, nil
+}
+
+func (e *eventRepositoryImpl) Delete(id int) (models.Event, error) {
+	checkId, err := e.FindById(id)
+
+	if err != nil {
+		return checkId, err
+	}
+
+	var event models.Event
+	res := e.db.Delete(&event, id)
+
+	if res.Error != nil {
+		return event, res.Error
+	}
+
+	return checkId, nil
 }

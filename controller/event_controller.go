@@ -16,7 +16,6 @@ type EventController struct {
 	eventUseCase   usecase.EventUseCase
 	rg             *gin.RouterGroup
 	authMiddleware middleware.AuthMiddleware
-	eventModel     models.Event
 }
 
 func NewEventController(eventUseCase usecase.EventUseCase, rg *gin.RouterGroup, authMiddleware middleware.AuthMiddleware) *EventController {
@@ -27,6 +26,8 @@ func (ec *EventController) Route() {
 	ec.rg.GET("/events", ec.getAllEvent)
 	ec.rg.POST("/events", ec.authMiddleware.RequireToken("admin"), ec.createEvent)
 	ec.rg.GET("/event/:id", ec.getEventById)
+	ec.rg.PUT("/event/:id", ec.authMiddleware.RequireToken("admin"), ec.updateEvent)
+	ec.rg.DELETE("/event/:id", ec.authMiddleware.RequireToken("admin"), ec.deleteEvent)
 }
 
 func (ec *EventController) getAllEvent(ctx *gin.Context) {
@@ -90,107 +91,89 @@ func (ec *EventController) createEvent(ctx *gin.Context) {
 	// }
 
 	// payload.PathImage = filePath
+
+	user, exists := ctx.Get("user")
+	if !exists {
+		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "User not found in context"})
+		return
+	}
+	userModel := user.(models.User)
+	userId := userModel.Id
+
+	payload.UserID = userId
 	event, err := ec.eventUseCase.CreateEvent(payload)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, modelutil.APIResponse(err.Error(), nil, false))
 		return
 	}
 
-	fmt.Println("data", event)
-	ctx.JSON(http.StatusOK, modelutil.APIResponse("Success create event", event, true))
+	users, err := ec.eventUseCase.FindEventUser(event.UserID)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, modelutil.APIResponse(err.Error(), nil, false))
+		return
+	}
+
+	userResponse := models.FormatUserResponse(users)
+	ctx.JSON(http.StatusOK, modelutil.APIResponse("Success create event", gin.H{
+		"id":          event.Id,
+		"eventUuid":   event.EventUuid,
+		"name":        event.Name,
+		"slug":        event.Slug,
+		"statusEvent": event.StatusEvent,
+		"startDate":   event.StartDate,
+		"endDate":     event.EndDate,
+		"startTime":   event.StartTime,
+		"endTime":     event.EndTime,
+		"location":    event.Location,
+		"address":     event.Address,
+		"description": event.Description,
+		"ticketTypes": event.TicketTypes,
+		"pathImage":   event.PathImage,
+		"minPrice":    event.MinimumPrice,
+		"createdAt":   event.CreatedAt,
+		"updatedAt":   event.UpdatedAt,
+		"user":        userResponse,
+	}, true))
 }
 
-// func (ec *EventController) createEvent(ctx *gin.Context) {
-// 	var payload models.Event
+func (ec *EventController) updateEvent(ctx *gin.Context) {
+	var inputId models.GetEventDetailInput
+	err := ctx.ShouldBindUri(&inputId)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
 
-// 	// Bind data dari form-data
-// 	if err := ctx.ShouldBind(&payload); err != nil {
-// 		ctx.JSON(http.StatusBadRequest, gin.H{"error": fmt.Sprintf("Invalid input: %s", err.Error())})
-// 		return
-// 	}
+	var input models.Event
+	err = ctx.ShouldBindJSON(&input)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
 
-// 	// Parsing tanggal dan waktu dari form-data
-// 	const dateFormat = "2006-01-02"
-// 	const dateTimeFormat = "2006-01-02T15:04:05Z07:00"
-// 	loc, _ := time.LoadLocation("Asia/Jakarta")
+	eventUpdated, err := ec.eventUseCase.UpdateEvent(inputId, input)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, modelutil.APIResponse(err.Error(), nil, false))
+		return
+	}
 
-// 	// Parse StartDate
-// 	if startDateStr := ctx.PostForm("startDate"); startDateStr != "" {
-// 		startDate, err := time.ParseInLocation(dateTimeFormat, startDateStr, loc)
-// 		if err != nil {
-// 			// Jika format tidak cocok dengan format lengkap, coba dengan format tanggal saja
-// 			startDate, err = time.ParseInLocation(dateFormat, startDateStr, loc)
-// 			if err != nil {
-// 				ctx.JSON(http.StatusBadRequest, gin.H{"error": fmt.Sprintf("Invalid startDate: %s", err.Error())})
-// 				return
-// 			}
-// 		}
-// 		payload.StartDate = startDate
-// 	}
+	ctx.JSON(http.StatusOK, modelutil.APIResponse("Success update event", eventUpdated, true))
+}
 
-// 	// Parse EndDate
-// 	if endDateStr := ctx.PostForm("endDate"); endDateStr != "" {
-// 		endDate, err := time.ParseInLocation(dateTimeFormat, endDateStr, loc)
-// 		if err != nil {
-// 			// Jika format tidak cocok dengan format lengkap, coba dengan format tanggal saja
-// 			endDate, err = time.ParseInLocation(dateFormat, endDateStr, loc)
-// 			if err != nil {
-// 				ctx.JSON(http.StatusBadRequest, gin.H{"error": fmt.Sprintf("Invalid endDate: %s", err.Error())})
-// 				return
-// 			}
-// 		}
-// 		payload.EndDate = endDate
-// 	}
+func (ec *EventController) deleteEvent(ctx *gin.Context) {
+	var inputId models.GetEventDetailInput
+	err := ctx.ShouldBindUri(&inputId)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
 
-// 	// Parse StartTime
-// 	if startTimeStr := ctx.PostForm("startTime"); startTimeStr != "" {
-// 		startTime, err := time.ParseInLocation("15:04", startTimeStr, loc)
-// 		if err != nil {
-// 			ctx.JSON(http.StatusBadRequest, gin.H{"error": fmt.Sprintf("Invalid startTime: %s", err.Error())})
-// 			return
-// 		}
-// 		payload.StartTime = startTime
-// 	}
+	newId, _ := strconv.Atoi(inputId.Id)
+	_, err = ec.eventUseCase.DeleteEventById(newId)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, modelutil.APIResponse(err.Error(), nil, false))
+		return
+	}
 
-// 	// Parse EndTime
-// 	if endTimeStr := ctx.PostForm("endTime"); endTimeStr != "" {
-// 		endTime, err := time.ParseInLocation("15:04", endTimeStr, loc)
-// 		if err != nil {
-// 			ctx.JSON(http.StatusBadRequest, gin.H{"error": fmt.Sprintf("Invalid endTime: %s", err.Error())})
-// 			return
-// 		}
-// 		payload.EndTime = endTime
-// 	}
-
-// 	// Handle file upload (image)
-// 	file, err := ctx.FormFile("image")
-// 	if err != nil {
-// 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Image is required"})
-// 		return
-// 	}
-
-// 	const uploadDir = "./uploads"
-// 	os.MkdirAll(uploadDir, os.ModePerm)
-// 	fileName := filepath.Base(file.Filename)
-// 	filePath := filepath.Join(uploadDir, fileName)
-
-// 	if err := ctx.SaveUploadedFile(file, filePath); err != nil {
-// 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save uploaded image"})
-// 		return
-// 	}
-
-// 	payload.PathImage = filePath
-
-// 	// Panggil use case untuk membuat event
-// 	event, err := ec.eventUseCase.CreateEvent(payload)
-// 	if err != nil {
-// 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("Failed to create event: %s", err.Error())})
-// 		return
-// 	}
-
-// 	// Return response berhasil
-// 	ctx.JSON(http.StatusOK, gin.H{
-// 		"message": "Event successfully created",
-// 		"data":    event,
-// 	})
-// }
+	ctx.JSON(http.StatusOK, modelutil.APIResponse("Success delete event", nil, true))
+}
