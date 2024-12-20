@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/robfig/cron/v3"
 )
 
 type DBConfig struct {
@@ -27,10 +28,14 @@ type TokenConfig struct {
 	AccessTokenLifeTime time.Duration
 }
 
+type SchedulerConfig struct {
+	Cron *cron.Cron
+}
 type Config struct {
 	DBConfig
 	APIConfig
 	TokenConfig
+	SchedulerConfig
 }
 
 func (c *Config) readConfig() error {
@@ -54,6 +59,10 @@ func (c *Config) readConfig() error {
 		JwtSignatureKey:     []byte("AAzuajwSMMAkwbau"),
 		JwtSigningMethod:    jwt.SigningMethodHS256,
 		AccessTokenLifeTime: accessTokenLifeTime,
+	}
+
+	c.SchedulerConfig = SchedulerConfig{
+		Cron: cron.New(),
 	}
 
 	if c.Host == "" || c.Port == "" || c.Username == "" || c.Password == "" || c.ApiPort == "" {

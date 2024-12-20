@@ -3,10 +3,12 @@ package main
 import (
 	"event-management-system/config"
 	"event-management-system/controller"
+	"event-management-system/jobs"
 	"event-management-system/middleware"
 	"event-management-system/models"
 	"event-management-system/repository"
 	"event-management-system/usecase"
+	"event-management-system/utils/scheduler"
 	"event-management-system/utils/service"
 	"fmt"
 	"log"
@@ -19,12 +21,13 @@ import (
 var DB *gorm.DB
 
 type Server struct {
-	userUC     usecase.UserUseCase
-	authUC     usecase.AuthenticationUseCase
-	eventUC    usecase.EventUseCase
-	jwtService service.JwtService
-	engine     *gin.Engine
-	host       string
+	userUC           usecase.UserUseCase
+	authUC           usecase.AuthenticationUseCase
+	eventUC          usecase.EventUseCase
+	jwtService       service.JwtService
+	schedulerService scheduler.SchedulerService
+	engine           *gin.Engine
+	host             string
 }
 
 func (s *Server) initRoute() {
@@ -51,9 +54,16 @@ func (s *Server) initMigration() {
 	fmt.Println("Migrated Successfully")
 }
 
+func (s *Server) initScheduler() {
+	if err := s.schedulerService.SendEmailActivation(); err != nil {
+		log.Fatalf("Failed to initialize scheduler: %v", err)
+	}
+}
+
 func (s *Server) Run() {
 	s.initRoute()
 	s.initMigration()
+	s.initScheduler()
 	if err := s.engine.Run(s.host); err != nil {
 		panic(fmt.Errorf("server not running on host %s, because error %v", s.host, err))
 	}
@@ -77,16 +87,19 @@ func NewServer() *Server {
 	eventUseCase := usecase.NewEventUseCase(eventRepo)
 
 	jwtService := service.NewJwtService(cfg.TokenConfig)
+	schedulerJobs := jobs.NewSchedulerJobs(userUseCase)
+	schedulerService := scheduler.NewSchedulerService(cfg.SchedulerConfig, schedulerJobs)
 	authUseCase := usecase.NewAuthenticationUseCase(userUseCase, jwtService)
 	engine := gin.Default()
 	host := fmt.Sprintf(":%s", cfg.ApiPort)
 
 	return &Server{
-		userUC:     userUseCase,
-		authUC:     authUseCase,
-		eventUC:    eventUseCase,
-		engine:     engine,
-		jwtService: jwtService,
-		host:       host,
+		userUC:           userUseCase,
+		authUC:           authUseCase,
+		eventUC:          eventUseCase,
+		engine:           engine,
+		jwtService:       jwtService,
+		schedulerService: schedulerService,
+		host:             host,
 	}
 }

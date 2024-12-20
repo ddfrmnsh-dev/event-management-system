@@ -19,6 +19,7 @@ type UserUseCase interface {
 	DeleteUserById(id int) (models.User, error)
 	FindUserByUsername(username string) (models.User, error)
 	FindUserByEmail(email string) (models.User, error)
+	FinByParams(params string, value bool) ([]models.User, error)
 }
 
 type userUseCaseImpl struct {
@@ -47,7 +48,7 @@ func (uc *userUseCaseImpl) FindUserById(id int) (models.User, error) {
 	return user, nil
 }
 func (uc *userUseCaseImpl) FindUserByUsername(username string) (models.User, error) {
-	user, err := uc.userRepository.FindBy("username", username)
+	user, err := uc.userRepository.FindBySingle("username", username)
 	if err != nil {
 		return user, err
 	}
@@ -55,7 +56,7 @@ func (uc *userUseCaseImpl) FindUserByUsername(username string) (models.User, err
 	return user, nil
 }
 func (uc *userUseCaseImpl) FindUserByEmail(email string) (models.User, error) {
-	user, err := uc.userRepository.FindBy("email", email)
+	user, err := uc.userRepository.FindBySingle("email", email)
 	if err != nil {
 		return user, err
 	}
@@ -157,4 +158,14 @@ func (uc *userUseCaseImpl) DeleteUserById(id int) (models.User, error) {
 	}
 
 	return user, nil
+}
+
+func (uc *userUseCaseImpl) FinByParams(params string, value bool) ([]models.User, error) {
+
+	users, err := uc.userRepository.FindByArray(params, value)
+	if err != nil {
+		return nil, err
+	}
+
+	return users, nil
 }

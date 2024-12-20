@@ -64,6 +64,11 @@ func (m *MockUserUseCase) DeleteUserById(id int) (models.User, error) {
 	return args.Get(0).(models.User), args.Error(1)
 }
 
+func (m *MockUserUseCase) FinByParams(params string, value bool) ([]models.User, error) {
+	args := m.Called(params, value)
+	return args.Get(0).([]models.User), args.Error(1)
+}
+
 // MockAuthMiddleware untuk menggantikan AuthMiddleware asli
 type MockAuthMiddleware struct {
 	mock.Mock

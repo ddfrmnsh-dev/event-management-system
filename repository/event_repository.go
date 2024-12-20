@@ -10,6 +10,8 @@ import (
 type EventRepository interface {
 	FindAll() ([]models.Event, error)
 	FindById(id int) (models.Event, error)
+	Save(event models.Event) (models.Event, error)
+	Update(event models.Event) (models.Event, error)
 }
 
 type eventRepositoryImpl struct {
@@ -51,6 +53,29 @@ func (e *eventRepositoryImpl) FindById(id int) (models.Event, error) {
 	if res.RowsAffected == 0 {
 		fmt.Println("no event found")
 		return event, nil
+	}
+
+	return event, nil
+}
+
+func (e *eventRepositoryImpl) Save(event models.Event) (models.Event, error) {
+	res := e.db.Create(&event)
+	fmt.Println("res", event)
+
+	if res.Error != nil {
+		fmt.Println("err:", res.Error)
+		return event, res.Error
+	}
+
+	return event, nil
+}
+
+func (e *eventRepositoryImpl) Update(event models.Event) (models.Event, error) {
+	res := e.db.Updates(&event)
+
+	if res.Error != nil {
+		fmt.Println("err:", res.Error)
+		return event, res.Error
 	}
 
 	return event, nil
