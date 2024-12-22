@@ -9,6 +9,7 @@ import (
 
 type UserRepository interface {
 	FindAll() ([]models.User, error)
+	FindAllUserEvent() ([]models.User, error)
 	FindById(id int) (models.User, error)
 	Save(user models.User) (models.User, error)
 	Update(user models.User) (models.User, error)
@@ -159,4 +160,24 @@ func (u *userRepositoryImpl) Delete(id int) (models.User, error) {
 	}
 
 	return checkId, nil
+}
+
+func (u *userRepositoryImpl) FindAllUserEvent() ([]models.User, error) {
+	var users []models.User
+
+	res := u.db.Preload("Events").Find(&users)
+	// res := u.db.Preload("Events", func(db *gorm.DB) *gorm.DB {
+	// 	return db.Omit("User")
+	// }).Find(&users)
+	if res.Error != nil {
+		fmt.Println("err:", res.Error)
+		return nil, res.Error
+	}
+
+	if res.RowsAffected == 0 {
+		fmt.Println("no event users found")
+		return users, nil
+	}
+
+	return users, nil
 }

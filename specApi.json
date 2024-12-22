@@ -106,6 +106,15 @@
     {
       "endpoint": "/api/events/:id/tickets",
       "method": "POST",
+      "description": "Membuat tiket untuk acara tertentu",
+      "authentication": "Organizer/Admin",
+      "parameters": {
+        "body": ["ticket_type", "quantity", "payment_method"]
+      }
+    },
+    {
+      "endpoint": "/api/events/:id/tickets",
+      "method": "POST",
       "description": "Membeli tiket untuk acara tertentu",
       "authentication": "User",
       "parameters": {

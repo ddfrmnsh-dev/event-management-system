@@ -26,6 +26,7 @@ func NewUserController(userUseCase usecase.UserUseCase, rg *gin.RouterGroup, aut
 func (uc *UserController) Route() {
 	uc.rg.GET("/users", uc.authMiddleware.RequireToken("admin"), uc.getAllUser)
 	uc.rg.GET("/users/:id", uc.authMiddleware.RequireToken("admin"), uc.getUserById)
+	uc.rg.GET("/users/events", uc.authMiddleware.RequireToken("admin"), uc.getAllEventUser)
 	uc.rg.POST("/users", uc.authMiddleware.RequireToken("admin"), uc.createUser)
 	uc.rg.PUT("/users/:id", uc.authMiddleware.RequireToken("admin"), uc.updateUser)
 	uc.rg.DELETE("/users/:id", uc.authMiddleware.RequireToken("admin"), uc.deleteUser)
@@ -125,4 +126,21 @@ func (uc *UserController) deleteUser(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, modelUtil.APIResponse("Succes delete user "+strconv.Itoa(deleteCustomer.Id), nil, true))
+}
+
+func (uc *UserController) getAllEventUser(ctx *gin.Context) {
+	users, err := uc.userUseCase.FindAllEventUser()
+
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"err": "Failed to retrieve data users"})
+		return
+	}
+
+	if len(users) > 0 {
+		ctx.JSON(http.StatusOK, modelUtil.APIResponse("Success get all event user", gin.H{"users": users}, true))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, modelUtil.APIResponse("List event user empty", nil, false))
+
 }

@@ -68,10 +68,10 @@ func (e *eventRepositoryImpl) Save(event models.Event) (models.Event, error) {
 		return event, res.Error
 	}
 
-	if err := e.db.Preload("User").First(&event, event.Id).Error; err != nil {
-		fmt.Println("err:", res.Error)
-		return event, res.Error
-	}
+	// if err := e.db.Preload("User").First(&event, event.Id).Error; err != nil {
+	// 	fmt.Println("err:", res.Error)
+	// 	return event, res.Error
+	// }
 
 	return event, nil
 }

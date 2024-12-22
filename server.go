@@ -24,6 +24,7 @@ type Server struct {
 	userUC           usecase.UserUseCase
 	authUC           usecase.AuthenticationUseCase
 	eventUC          usecase.EventUseCase
+	ticketUC         usecase.TicketUseCase
 	jwtService       service.JwtService
 	schedulerService scheduler.SchedulerService
 	engine           *gin.Engine
@@ -39,12 +40,14 @@ func (s *Server) initRoute() {
 
 	controller.NewUserController(s.userUC, rgV1, authMiddleware).Route()
 	controller.NewEventController(s.eventUC, rgV1, authMiddleware).Route()
+	controller.NewTicketController(s.ticketUC, rgV1, authMiddleware).Route()
 }
 
 func (s *Server) initMigration() {
 	err := DB.AutoMigrate(
 		&models.User{},
 		&models.Event{},
+		&models.Tickets{},
 	)
 
 	if err != nil {
@@ -82,9 +85,11 @@ func NewServer() *Server {
 
 	userRepo := repository.NewUserRepository(DB)
 	eventRepo := repository.NewEventRepository(DB)
+	ticketRepo := repository.NewTicketRepository(DB)
 
 	userUseCase := usecase.NewUserUseCase(userRepo)
 	eventUseCase := usecase.NewEventUseCase(eventRepo, userRepo)
+	ticketUseCase := usecase.NewTicketUseCase(ticketRepo)
 
 	jwtService := service.NewJwtService(cfg.TokenConfig)
 	schedulerJobs := jobs.NewSchedulerJobs(userUseCase)
@@ -97,6 +102,7 @@ func NewServer() *Server {
 		userUC:           userUseCase,
 		authUC:           authUseCase,
 		eventUC:          eventUseCase,
+		ticketUC:         ticketUseCase,
 		engine:           engine,
 		jwtService:       jwtService,
 		schedulerService: schedulerService,

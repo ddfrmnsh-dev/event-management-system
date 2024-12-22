@@ -13,6 +13,7 @@ import (
 
 type UserUseCase interface {
 	FindAllUser() ([]models.User, error)
+	FindAllEventUser() ([]models.User, error)
 	FindUserById(id int) (models.User, error)
 	CreateUser(input models.User) (models.User, error)
 	UpdateUser(id models.GetCustomerDetailInput, input models.User) (models.User, error)
@@ -163,6 +164,15 @@ func (uc *userUseCaseImpl) DeleteUserById(id int) (models.User, error) {
 func (uc *userUseCaseImpl) FinByParams(params string, value bool) ([]models.User, error) {
 
 	users, err := uc.userRepository.FindByArray(params, value)
+	if err != nil {
+		return nil, err
+	}
+
+	return users, nil
+}
+
+func (uc *userUseCaseImpl) FindAllEventUser() ([]models.User, error) {
+	users, err := uc.userRepository.FindAllUserEvent()
 	if err != nil {
 		return nil, err
 	}

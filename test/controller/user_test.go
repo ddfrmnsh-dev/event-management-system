@@ -69,6 +69,11 @@ func (m *MockUserUseCase) FinByParams(params string, value bool) ([]models.User,
 	return args.Get(0).([]models.User), args.Error(1)
 }
 
+func (m *MockUserUseCase) FindAllEventUser() ([]models.User, error) {
+	args := m.Called()
+	return args.Get(0).([]models.User), args.Error(1)
+}
+
 // MockAuthMiddleware untuk menggantikan AuthMiddleware asli
 type MockAuthMiddleware struct {
 	mock.Mock

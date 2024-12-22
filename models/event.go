@@ -25,7 +25,7 @@ type Event struct {
 	CreatedAt    time.Time  `json:"createdAt" form:"createdAt" gorm:"not null"`
 	UpdatedAt    *time.Time `json:"updatedAt" form:"updatedAt" gorm:"autoUpdateTime:false"`
 	UserID       int        `json:"userId" gorm:"not null"`
-	User         User       `gorm:"constraint:OnDelete:CASCADE;"`
+	User         User       `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
 }
 
 // func FormatUserEvent(user User, event Event) Event {
