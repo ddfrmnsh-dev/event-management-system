@@ -2,7 +2,7 @@ package models
 
 import "time"
 
-type Tickets struct {
+type Ticket struct {
 	Id         int        `json:"id" form:"id" gorm:"primaryKey"`
 	TikcetUuid string     `json:"ticketUuid" form:"ticketUuid" gorm:"size:255"`
 	TicketType string     `json:"ticketType"`
@@ -12,5 +12,9 @@ type Tickets struct {
 	CreatedAt  time.Time  `json:"createdAt"`
 	UpdatedAt  *time.Time `json:"updatedAt" form:"updatedAt" gorm:"autoUpdateTime:false"`
 	EventID    int        `json:"eventId" gorm:"not null"`
-	Event      Event      `gorm:"constraint:OnDelete:CASCADE;"`
+	Event      Event      `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
+}
+
+type PayloadTicket struct {
+	Ids []int `json:"ids" binding:"required"`
 }

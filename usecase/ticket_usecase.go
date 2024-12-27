@@ -7,7 +7,8 @@ import (
 )
 
 type TicketUseCase interface {
-	CreateTicket(input []models.Tickets) ([]models.Tickets, error)
+	CreateTicket(input []models.Ticket) ([]models.Ticket, error)
+	DeleteTicketById(id []int) (models.Ticket, error)
 }
 
 type ticketUseCaseImpl struct {
@@ -18,17 +19,17 @@ func NewTicketUseCase(ticketRepository repository.TicketRepository) TicketUseCas
 	return &ticketUseCaseImpl{ticketRepository: ticketRepository}
 }
 
-func (tc *ticketUseCaseImpl) CreateTicket(input []models.Tickets) ([]models.Tickets, error) {
+func (tc *ticketUseCaseImpl) CreateTicket(input []models.Ticket) ([]models.Ticket, error) {
 	var errs error
-	ticket := []models.Tickets{}
+	ticket := []models.Ticket{}
 
 	if len(input) == 0 {
 		fmt.Println("No tickets to process")
-		return []models.Tickets{}, errs
+		return []models.Ticket{}, errs
 	}
 
 	for _, t := range input {
-		newTicket := models.Tickets{
+		newTicket := models.Ticket{
 			TikcetUuid: GenerateUuid(),
 			TicketType: t.TicketType,
 			Price:      t.Price,
@@ -45,4 +46,12 @@ func (tc *ticketUseCaseImpl) CreateTicket(input []models.Tickets) ([]models.Tick
 	}
 
 	return saveTicket, nil
+}
+
+func (tc *ticketUseCaseImpl) DeleteTicketById(id []int) (models.Ticket, error) {
+	ticket, err := tc.ticketRepository.Delete(id)
+	if err != nil {
+		return ticket, err
+	}
+	return ticket, nil
 }

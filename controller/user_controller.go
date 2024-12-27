@@ -24,9 +24,9 @@ func NewUserController(userUseCase usecase.UserUseCase, rg *gin.RouterGroup, aut
 }
 
 func (uc *UserController) Route() {
-	uc.rg.GET("/users", uc.authMiddleware.RequireToken("admin"), uc.getAllUser)
+	uc.rg.GET("/users", uc.authMiddleware.RequireToken("admin", "Organization"), uc.getAllUser)
 	uc.rg.GET("/users/:id", uc.authMiddleware.RequireToken("admin"), uc.getUserById)
-	uc.rg.GET("/users/events", uc.authMiddleware.RequireToken("admin"), uc.getAllEventUser)
+	uc.rg.GET("/users/events", uc.authMiddleware.RequireToken("admin", "Organization"), uc.getAllEventUser)
 	uc.rg.POST("/users", uc.authMiddleware.RequireToken("admin"), uc.createUser)
 	uc.rg.PUT("/users/:id", uc.authMiddleware.RequireToken("admin"), uc.updateUser)
 	uc.rg.DELETE("/users/:id", uc.authMiddleware.RequireToken("admin"), uc.deleteUser)

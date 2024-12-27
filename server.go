@@ -47,7 +47,7 @@ func (s *Server) initMigration() {
 	err := DB.AutoMigrate(
 		&models.User{},
 		&models.Event{},
-		&models.Tickets{},
+		&models.Ticket{},
 	)
 
 	if err != nil {

@@ -24,8 +24,9 @@ func NewEventController(eventUseCase usecase.EventUseCase, rg *gin.RouterGroup, 
 
 func (ec *EventController) Route() {
 	ec.rg.GET("/events", ec.getAllEvent)
-	ec.rg.POST("/events", ec.authMiddleware.RequireToken("admin"), ec.createEvent)
+	ec.rg.POST("/events", ec.authMiddleware.RequireToken("admin", "Organization"), ec.createEvent)
 	ec.rg.GET("/event/:id", ec.getEventById)
+	ec.rg.GET("/event/ticket", ec.getEventTicket)
 	ec.rg.PUT("/event/:id", ec.authMiddleware.RequireToken("admin"), ec.updateEvent)
 	ec.rg.DELETE("/event/:id", ec.authMiddleware.RequireToken("admin"), ec.deleteEvent)
 }
@@ -177,3 +178,36 @@ func (ec *EventController) deleteEvent(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusOK, modelutil.APIResponse("Success delete event", nil, true))
 }
+
+func (ec *EventController) getEventTicket(ctx *gin.Context) {
+
+	event, err := ec.eventUseCase.FindEventTicket()
+
+	if err != nil {
+		ctx.JSON(http.StatusNotFound, modelutil.APIResponse(err.Error(), nil, false))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, modelutil.APIResponse("Success Get Event Ticket", event, true))
+
+}
+
+// func (ec *EventController) getEventTicket(ctx *gin.Context) {
+// 	eventId := ctx.Param("id")
+
+// 	id, err := strconv.Atoi(eventId)
+// 	if err != nil {
+// 		ctx.JSON(http.StatusBadRequest, gin.H{"err": "Invalid event id"})
+// 		return
+// 	}
+
+// 	event, err := ec.eventUseCase.FindEventTicket(id)
+
+// 	if err != nil {
+// 		ctx.JSON(http.StatusNotFound, modelutil.APIResponse(err.Error(), nil, false))
+// 		return
+// 	}
+
+// 	ctx.JSON(http.StatusOK, modelutil.APIResponse("Success Get Event Ticket", event, true))
+
+// }

@@ -165,7 +165,7 @@ func (u *userRepositoryImpl) Delete(id int) (models.User, error) {
 func (u *userRepositoryImpl) FindAllUserEvent() ([]models.User, error) {
 	var users []models.User
 
-	res := u.db.Preload("Events").Find(&users)
+	res := u.db.Preload("Events.Tickets").Find(&users)
 	// res := u.db.Preload("Events", func(db *gorm.DB) *gorm.DB {
 	// 	return db.Omit("User")
 	// }).Find(&users)

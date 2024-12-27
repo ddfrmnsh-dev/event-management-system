@@ -10,6 +10,9 @@ import (
 type EventRepository interface {
 	FindAll() ([]models.Event, error)
 	FindById(id int) (models.Event, error)
+	// FindEventTicket(id int) (models.Event, error)
+	FindEventTicket() ([]models.Event, error)
+	// FindEventTicket(id int) ([]models.Ticket, error)
 	Save(event models.Event) (models.Event, error)
 	Update(event models.Event) (models.Event, error)
 	Delete(id int) (models.Event, error)
@@ -44,7 +47,7 @@ func (e *eventRepositoryImpl) FindAll() ([]models.Event, error) {
 func (e *eventRepositoryImpl) FindById(id int) (models.Event, error) {
 	var event models.Event
 
-	res := e.db.First(&event, id)
+	res := e.db.Preload("Tickets").First(&event, id)
 
 	if res.Error != nil {
 		fmt.Println("err:", res.Error)
@@ -103,3 +106,67 @@ func (e *eventRepositoryImpl) Delete(id int) (models.Event, error) {
 
 	return checkId, nil
 }
+
+// func (e *eventRepositoryImpl) FindEventTicket(id int) ([]models.Ticket, error) {
+// 	// var event models.Event
+// 	// res := e.db.Preload("Tickets").Where("id = ?", id).First(&event)
+// 	// fmt.Printf("Query executed: %+v\n", res.Statement.SQL.String())
+
+// 	// if res.Error != nil {
+// 	// 	fmt.Println("err:", res.Error)
+// 	// 	return event, res.Error
+// 	// }
+
+// 	// if res.RowsAffected == 0 {
+// 	// 	fmt.Println("no event found")
+// 	// 	return event, nil
+// 	// }
+
+// 	// return event, nil
+
+// 	var tickets []models.Ticket
+// 	res := e.db.Where("event_id = ?", id).Find(&tickets)
+// 	if res.Error != nil {
+// 		return nil, res.Error
+// 	}
+// 	return tickets, nil
+
+// }
+
+func (e *eventRepositoryImpl) FindEventTicket() ([]models.Event, error) {
+	var event []models.Event
+	res := e.db.Preload("Tickets").Find(&event)
+	fmt.Printf("Query executed: %+v\n", res.Statement.SQL.String())
+
+	if res.Error != nil {
+		fmt.Println("err:", res.Error)
+		return event, res.Error
+	}
+
+	if res.RowsAffected == 0 {
+		fmt.Println("no event found")
+		return event, nil
+	}
+
+	return event, nil
+
+}
+
+// func (e *eventRepositoryImpl) FindEventTicket(id int) (models.Event, error) {
+// 	var event models.Event
+// 	res := e.db.Preload("Tickets").Where("id = ?", id).Find(&event)
+// 	fmt.Printf("Query executed: %+v\n", res.Statement.SQL.String())
+
+// 	if res.Error != nil {
+// 		fmt.Println("err:", res.Error)
+// 		return event, res.Error
+// 	}
+
+// 	if res.RowsAffected == 0 {
+// 		fmt.Println("no event found")
+// 		return event, nil
+// 	}
+
+// 	return event, nil
+
+// }

@@ -15,6 +15,9 @@ type EventUseCase interface {
 	FindAllEvent() ([]models.Event, error)
 	FindEventById(id int) (models.Event, error)
 	FindEventUser(id int) (models.User, error)
+	FindEventTicket() ([]models.Event, error)
+	// FindEventTicket(id int) (models.Event, error)
+	// FindEventTicket(id int) ([]models.Ticket, error)
 	CreateEvent(input models.Event) (models.Event, error)
 	UpdateEvent(uriId models.GetEventDetailInput, input models.Event) (models.Event, error)
 	DeleteEventById(id int) (models.Event, error)
@@ -142,6 +145,26 @@ func (ec *eventUseCaseImpl) DeleteEventById(id int) (models.Event, error) {
 
 	return event, nil
 }
+
+func (ec *eventUseCaseImpl) FindEventTicket() ([]models.Event, error) {
+	event, err := ec.eventRepository.FindEventTicket()
+
+	if err != nil {
+		return event, err
+	}
+
+	return event, nil
+}
+
+// func (ec *eventUseCaseImpl) FindEventTicket(id int) ([]models.Ticket, error) {
+// 	event, err := ec.eventRepository.FindEventTicket(id)
+
+// 	if err != nil {
+// 		return event, err
+// 	}
+
+// 	return event, nil
+// }
 
 func GenerateUuid() string {
 	return uuid.NewString()
