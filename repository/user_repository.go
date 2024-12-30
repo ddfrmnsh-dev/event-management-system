@@ -48,7 +48,7 @@ func (u *userRepositoryImpl) FindAll() ([]models.User, error) {
 func (u *userRepositoryImpl) FindById(id int) (models.User, error) {
 	var user models.User
 
-	res := u.db.First(&user, id)
+	res := u.db.Preload("Orders.OrderDetails.Ticket.Event").First(&user, id)
 	if res.Error != nil {
 		fmt.Println("err:", res.Error)
 		return user, res.Error

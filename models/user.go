@@ -14,6 +14,7 @@ type User struct {
 	CreatedAt time.Time `json:"createdAt" gorm:"default:current_timestamp"`
 	UpdatedAt time.Time `json:"updatedAt" gorm:"default:current_timestamp"`
 	Events    []Event   `gorm:"foreignKey:UserID"`
+	Orders    []Order   `gorm:"foreignKey:UserID"`
 }
 
 type GetCustomerDetailInput struct {

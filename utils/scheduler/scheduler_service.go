@@ -8,16 +8,19 @@ import (
 
 type SchedulerService interface {
 	SendEmailActivation() error
+	CheckPaymentOrder() error
 }
 type schedulerService struct {
-	cfg           config.SchedulerConfig
-	jobsScheduler jobs.SchedulerJobs
+	cfg                config.SchedulerConfig
+	jobsScheduler      jobs.SchedulerJobs
+	jobsOrderScheduler jobs.SchedulerOrderJobs
 }
 
-func NewSchedulerService(cfg config.SchedulerConfig, jobsScheduler jobs.SchedulerJobs) SchedulerService {
+func NewSchedulerService(cfg config.SchedulerConfig, jobsScheduler jobs.SchedulerJobs, jobsOrderScheduler jobs.SchedulerOrderJobs) SchedulerService {
 	return &schedulerService{
-		cfg:           cfg,
-		jobsScheduler: jobsScheduler,
+		cfg:                cfg,
+		jobsScheduler:      jobsScheduler,
+		jobsOrderScheduler: jobsOrderScheduler,
 	}
 }
 
@@ -40,6 +43,17 @@ func (s *schedulerService) SendEmailActivation() error {
 
 	cronExpression := "*/5 * * * *"
 	_, err := s.cfg.Cron.AddFunc(cronExpression, s.jobsScheduler.SendEmailActivation)
+	if err != nil {
+		return err
+	}
+	s.cfg.Cron.Start()
+	return nil
+}
+func (s *schedulerService) CheckPaymentOrder() error {
+	fmt.Println("SCHEDULER CHECK PAYMENT")
+
+	cronExpression := "*/1 * * * *"
+	_, err := s.cfg.Cron.AddFunc(cronExpression, s.jobsOrderScheduler.CheckStatusPayment)
 	if err != nil {
 		return err
 	}
