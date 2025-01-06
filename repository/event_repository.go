@@ -12,6 +12,7 @@ type EventRepository interface {
 	FindById(id int) (models.Event, error)
 	// FindEventTicket(id int) (models.Event, error)
 	FindEventTicket() ([]models.Event, error)
+	FindParticipantEvent(id int) (models.Event, error)
 	// FindEventTicket(id int) ([]models.Ticket, error)
 	Save(event models.Event) (models.Event, error)
 	Update(event models.Event) (models.Event, error)
@@ -136,6 +137,24 @@ func (e *eventRepositoryImpl) Delete(id int) (models.Event, error) {
 func (e *eventRepositoryImpl) FindEventTicket() ([]models.Event, error) {
 	var event []models.Event
 	res := e.db.Preload("Tickets").Find(&event)
+	fmt.Printf("Query executed: %+v\n", res.Statement.SQL.String())
+
+	if res.Error != nil {
+		fmt.Println("err:", res.Error)
+		return event, res.Error
+	}
+
+	if res.RowsAffected == 0 {
+		fmt.Println("no event found")
+		return event, nil
+	}
+
+	return event, nil
+
+}
+func (e *eventRepositoryImpl) FindParticipantEvent(id int) (models.Event, error) {
+	var event models.Event
+	res := e.db.Preload("User.Orders.OrderDetails.Ticket").First(&event, id)
 	fmt.Printf("Query executed: %+v\n", res.Statement.SQL.String())
 
 	if res.Error != nil {

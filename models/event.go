@@ -7,29 +7,57 @@ import (
 )
 
 type Event struct {
-	Id           int        `json:"id" form:"id" gorm:"primaryKey"`
-	EventUuid    string     `json:"eventUuid" form:"eventUuid" gorm:"size:255"`
-	Name         string     `json:"name" form:"name" gorm:"not null;size:255"`
-	Slug         string     `json:"slug" form:"slug" gorm:"not null;size:255"`
-	StatusEvent  string     `json:"statusEvent" form:"statusEvent" gorm:"not null;size:255"`
-	StartDate    time.Time  `json:"startDate" form:"startDate" gorm:"type:date;not null"`
-	EndDate      time.Time  `json:"endDate" form:"endDate" gorm:"type:date;not null"`
-	StartTime    string     `json:"startTime" form:"startTime" gorm:"not null"`
-	EndTime      string     `json:"endTime" form:"endTime" gorm:"not null"`
-	Location     string     `json:"location" form:"location" gorm:"not null;size:255"`
-	Address      string     `json:"address" form:"address" gorm:"not null;size:255"`
-	Description  string     `json:"description" form:"description" gorm:"not null"`
-	TicketTypes  string     `json:"ticketTypes" form:"ticketTypes" gorm:"not null;size:255"`
-	PathImage    string     `json:"pathImage" form:"pathImage" gorm:"not null"`
-	MinimumPrice int        `json:"minPrice" form:"minPrice" gorm:"not null"`
-	CreatedAt    time.Time  `json:"createdAt" form:"createdAt" gorm:"not null"`
-	UpdatedAt    *time.Time `json:"updatedAt" form:"updatedAt" gorm:"autoUpdateTime:false"`
-	UserID       int        `json:"userId" gorm:"not null"`
-	User         User       `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
-	Tickets      []Ticket   `gorm:"foreignKey:EventID"`
+	Id           int          `json:"id" form:"id" gorm:"primaryKey"`
+	EventUuid    string       `json:"eventUuid" form:"eventUuid" gorm:"size:255"`
+	Name         string       `json:"name" form:"name" gorm:"not null;size:255"`
+	Slug         string       `json:"slug" form:"slug" gorm:"not null;size:255"`
+	StatusEvent  string       `json:"statusEvent" form:"statusEvent" gorm:"not null;size:255"`
+	StartDate    time.Time    `json:"startDate" form:"startDate" gorm:"type:date;not null"`
+	EndDate      time.Time    `json:"endDate" form:"endDate" gorm:"type:date;not null"`
+	StartTime    string       `json:"startTime" form:"startTime" gorm:"not null"`
+	EndTime      string       `json:"endTime" form:"endTime" gorm:"not null"`
+	Location     string       `json:"location" form:"location" gorm:"not null;size:255"`
+	Address      string       `json:"address" form:"address" gorm:"not null;size:255"`
+	Description  string       `json:"description" form:"description" gorm:"not null"`
+	TicketTypes  string       `json:"ticketTypes" form:"ticketTypes" gorm:"not null;size:255"`
+	PathImage    string       `json:"pathImage" form:"pathImage" gorm:"not null"`
+	MinimumPrice int          `json:"minPrice" form:"minPrice" gorm:"not null"`
+	CreatedAt    time.Time    `json:"createdAt" form:"createdAt" gorm:"not null"`
+	UpdatedAt    *time.Time   `json:"updatedAt" form:"updatedAt" gorm:"autoUpdateTime:false"`
+	UserID       int          `json:"userId" gorm:"not null"`
+	User         User         `json:"-" gorm:"constraint:OnDelete:CASCADE;"`
+	UserResponse UserResponse `json:"user" gorm:"-"`
+	Tickets      []Ticket     `gorm:"foreignKey:EventID"`
 }
 
-// func FormatUserEvent(user User, event Event) Event {
+func FormatEventResponse(event Event) Event {
+	formatter := Event{
+		Id:           event.Id,
+		EventUuid:    event.EventUuid,
+		Name:         event.Name,
+		Slug:         event.Slug,
+		StatusEvent:  event.StatusEvent,
+		StartDate:    event.StartDate,
+		EndDate:      event.EndDate,
+		StartTime:    event.StartTime,
+		EndTime:      event.EndTime,
+		Location:     event.Location,
+		Address:      event.Address,
+		Description:  event.Description,
+		TicketTypes:  event.TicketTypes,
+		PathImage:    event.PathImage,
+		MinimumPrice: event.MinimumPrice,
+		CreatedAt:    event.CreatedAt,
+		UpdatedAt:    event.UpdatedAt,
+		UserID:       event.UserID,
+		User:         event.User,
+		UserResponse: FormatUserResponse(event.User), // Panggil fungsi transformasi User
+		Tickets:      event.Tickets,                  // Jika Tickets tidak perlu diformat, langsung gunakan
+	}
+	return formatter
+}
+
+// func FormatEventResponse(event Event) Event {
 // 	formatter := Event{
 // 		Id:           event.Id,
 // 		EventUuid:    event.EventUuid,
@@ -49,13 +77,7 @@ type Event struct {
 // 		CreatedAt:    event.CreatedAt,
 // 		UpdatedAt:    event.UpdatedAt,
 // 		UserID:       event.UserID,
-// 		User: User{
-// 			Id:        user.Id,
-// 			Username:  user.Username,
-// 			IsActive:  user.IsActive,
-// 			CreatedAt: user.CreatedAt,
-// 			UpdatedAt: user.UpdatedAt,
-// 		},
+// 		User:         FormatUserResponse(event.User),
 // 	}
 // 	return formatter
 // }

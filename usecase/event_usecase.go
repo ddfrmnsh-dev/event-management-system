@@ -15,6 +15,7 @@ type EventUseCase interface {
 	FindAllEvent() ([]models.Event, error)
 	FindEventById(id int) (models.Event, error)
 	FindEventUser(id int) (models.User, error)
+	FindParticipantEvent(id int) (models.Event, error)
 	FindEventTicket() ([]models.Event, error)
 	// FindEventTicket(id int) (models.Event, error)
 	// FindEventTicket(id int) ([]models.Ticket, error)
@@ -148,6 +149,16 @@ func (ec *eventUseCaseImpl) DeleteEventById(id int) (models.Event, error) {
 
 func (ec *eventUseCaseImpl) FindEventTicket() ([]models.Event, error) {
 	event, err := ec.eventRepository.FindEventTicket()
+
+	if err != nil {
+		return event, err
+	}
+
+	return event, nil
+}
+
+func (ec *eventUseCaseImpl) FindParticipantEvent(id int) (models.Event, error) {
+	event, err := ec.eventRepository.FindParticipantEvent(id)
 
 	if err != nil {
 		return event, err

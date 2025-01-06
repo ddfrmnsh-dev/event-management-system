@@ -29,6 +29,7 @@ func (ec *EventController) Route() {
 	ec.rg.GET("/event/ticket", ec.getEventTicket)
 	ec.rg.PUT("/event/:id", ec.authMiddleware.RequireToken("admin"), ec.updateEvent)
 	ec.rg.DELETE("/event/:id", ec.authMiddleware.RequireToken("admin"), ec.deleteEvent)
+	ec.rg.GET("/event/:id/participants", ec.authMiddleware.RequireToken("admin"), ec.getParticipantEvent)
 }
 
 func (ec *EventController) getAllEvent(ctx *gin.Context) {
@@ -190,6 +191,27 @@ func (ec *EventController) getEventTicket(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusOK, modelutil.APIResponse("Success Get Event Ticket", event, true))
 
+}
+
+func (ec *EventController) getParticipantEvent(ctx *gin.Context) {
+	var inputId models.GetEventDetailInput
+	err := ctx.ShouldBindUri(&inputId)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	newId, _ := strconv.Atoi(inputId.Id)
+	event, err := ec.eventUseCase.FindParticipantEvent(newId)
+
+	formatter := models.FormatEventResponse(event)
+
+	if err != nil {
+		ctx.JSON(http.StatusNotFound, modelutil.APIResponse(err.Error(), nil, false))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, modelutil.APIResponse("Success Get Participant Event", formatter, true))
 }
 
 // func (ec *EventController) getEventTicket(ctx *gin.Context) {
