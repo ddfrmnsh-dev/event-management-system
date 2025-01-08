@@ -1,5 +1,7 @@
 package modelutil
 
+// APIResponse represents a standard API response.
+// @Description Standard API response format
 type Response struct {
 	Message string      `json:"message"`
 	Status  bool        `json:"status"`

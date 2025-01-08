@@ -23,6 +23,17 @@ func (ac *AuthController) Route() {
 	ac.rg.POST("/signin", ac.login)
 }
 
+// Login godoc
+// @Summary Login user
+// @Description Authenticate user and return a token
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Param input body models.InputLogin true "Login credentials"
+// @Success 200 {object} modelUtil.Response
+// @Failure 400 {object} map[string]string
+// @Failure 401 {object} map[string]string
+// @Router /api/auth/signin [post]
 func (ac *AuthController) login(ctx *gin.Context) {
 	fmt.Println("Starting login process")
 	var payload models.InputLogin

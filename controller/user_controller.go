@@ -32,6 +32,16 @@ func (uc *UserController) Route() {
 	uc.rg.DELETE("/users/:id", uc.authMiddleware.RequireToken("admin"), uc.deleteUser)
 }
 
+// @Summary Get all users
+// @Description Retrieve all user information
+// @Tags users
+// @Security BearerAuth
+// @Accept json
+// @Produce json
+// @Success 200 {object} modelUtil.Response
+// @Failure 401 {string} string "Unauthorized"
+// @Failure 500 {string} string "Internal Server Error"
+// @Router /api/v1/users [get]
 func (uc *UserController) getAllUser(ctx *gin.Context) {
 	users, err := uc.userUseCase.FindAllUser()
 
@@ -48,6 +58,18 @@ func (uc *UserController) getAllUser(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, modelUtil.APIResponse("List user empty", nil, false))
 }
 
+// @Summary Get user by ID
+// @Description Retrieve user details by user ID
+// @Tags users
+// @Security BearerAuth
+// @Accept json
+// @Produce json
+// @Param id path int true "User ID"
+// @Success 200 {object} modelUtil.Response
+// @Failure 400 {object} map[string]string "Invalid ID"
+// @Failure 404 {object} map[string]string "User not found"
+// @Failure 500 {object} map[string]string "Internal server error"
+// @Router /api/v1/users/{id} [get]
 func (uc *UserController) getUserById(ctx *gin.Context) {
 	idUser := ctx.Param("id")
 

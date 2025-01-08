@@ -12,13 +12,39 @@ import (
 	"event-management-system/utils/service"
 	"fmt"
 	"log"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
+
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+
+	// Swagger UI files
+	_ "event-management-system/docs"
+
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger" // Gin Swagger middleware
 )
 
 var DB *gorm.DB
+
+// var (
+// 	opsProcessed = promauto.NewCounter(prometheus.CounterOpts{
+// 		Name: "myapp_processed_ops_total",
+// 		Help: "The total number of processed events",
+// 	})
+// )
+
+// @title My API
+// @version 1.0
+// @description This is a sample server.
+// @termsOfService http://swagger.io/terms/
+// @host localhost:8080
+// @BasePath /api/v1
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
 
 type Server struct {
 	userUC           usecase.UserUseCase
@@ -33,17 +59,35 @@ type Server struct {
 }
 
 func (s *Server) initRoute() {
+	s.engine.GET("/metrics", gin.WrapH(promhttp.Handler()))
+	s.engine.Use(middleware.PrometheusMiddleware())
 	rgAuth := s.engine.Group("/api/auth")
 	controller.NewAuthController(s.authUC, rgAuth).Route()
 
 	rgV1 := s.engine.Group("/api/v1")
 	authMiddleware := middleware.NewAuthMiddleware(s.jwtService)
-
 	controller.NewUserController(s.userUC, rgV1, authMiddleware).Route()
 	controller.NewEventController(s.eventUC, rgV1, authMiddleware).Route()
 	controller.NewTicketController(s.ticketUC, rgV1, authMiddleware).Route()
 	controller.NewOrderController(s.orderUC, rgV1, authMiddleware).Route()
+
+	s.engine.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+	s.engine.LoadHTMLGlob("templates/*")
+
+	s.engine.GET("/visualization", func(c *gin.Context) {
+		c.HTML(http.StatusOK, "visualization.html", nil)
+	})
+
 }
+
+// func (s *Server) initRecordMetrics() {
+// 	go func() {
+// 		for {
+// 			opsProcessed.Inc()
+// 			time.Sleep(2 * time.Second)
+// 		}
+// 	}()
+// }
 
 func (s *Server) initMigration() {
 	err := DB.AutoMigrate(
@@ -62,9 +106,9 @@ func (s *Server) initMigration() {
 }
 
 func (s *Server) initScheduler() {
-	if err := s.schedulerService.SendEmailActivation(); err != nil {
-		log.Fatalf("Failed to initialize scheduler: %v", err)
-	}
+	// if err := s.schedulerService.SendEmailActivation(); err != nil {
+	// 	log.Fatalf("Failed to initialize scheduler: %v", err)
+	// }
 
 	if err := s.schedulerService.CheckPaymentOrder(); err != nil {
 		log.Fatalf("Failed to initialize scheduler: %v", err)
@@ -75,6 +119,7 @@ func (s *Server) Run() {
 	s.initRoute()
 	s.initMigration()
 	s.initScheduler()
+	// s.initRecordMetrics()
 	if err := s.engine.Run(s.host); err != nil {
 		panic(fmt.Errorf("server not running on host %s, because error %v", s.host, err))
 	}

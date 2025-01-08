@@ -144,3 +144,17 @@ Untuk memulai menggunakan API ini, Anda perlu mengkloning repositori dan mengatu
    ```
 
 6. Akses API di `http://localhost:8888`.
+
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
+// @description Enter your token like: Bearer <your-token>
+
+"securityDefinitions": {
+"BearerAuth": {
+"type": "apiKey",
+"name": "Authorization",
+"in": "header",
+"description": "Enter your token like: Bearer <your-token>"
+}
+},

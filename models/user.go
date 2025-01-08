@@ -4,6 +4,8 @@ import (
 	"time"
 )
 
+// User represents the structure of a user.
+// @Description User details
 type User struct {
 	Id        int       `json:"id" gorm:"primaryKey"`
 	Username  string    `json:"username" gorm:"not null;size:255"`
@@ -21,6 +23,10 @@ type GetCustomerDetailInput struct {
 	Id string `uri:"id" binding:"required,numeric"`
 }
 
+// InputLogin godoc
+// @Description Login credentials
+// @Property usernameOrEmail string "Identifier for login"
+// @Property password string "Password for login"
 type InputLogin struct {
 	Identifier string `json:"usernameOrEmail" binding:"required"`
 	Password   string `json:"password" binding:"required"`
