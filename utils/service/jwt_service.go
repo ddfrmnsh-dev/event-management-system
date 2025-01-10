@@ -24,22 +24,55 @@ func NewJwtService(cfg config.TokenConfig) JwtService {
 	return &jwtService{cfg: cfg}
 }
 
+// func (j *jwtService) CreateToken(user models.User) (string, error) {
+// 	tokenKey := j.cfg.JwtSignatureKey
+// 	newId := strconv.Itoa(user.Id)
+// 	claims := modelUtil.JwtPayloadClaim{
+// 		RegisteredClaims: jwt.RegisteredClaims{
+// 			Issuer:    j.cfg.ApplicationName,
+// 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(j.cfg.AccessTokenLifeTime)),
+// 		},
+// 		UserId: newId,
+// 		Role:   user.Role,
+// 	}
+
+// 	jwtNewClaim := jwt.NewWithClaims(j.cfg.JwtSigningMethod, claims)
+// 	token, err := jwtNewClaim.SignedString(tokenKey)
+// 	if err != nil {
+// 		return "", nil
+// 	}
+
+// 	return token, nil
+// }
+
 func (j *jwtService) CreateToken(user models.User) (string, error) {
-	tokenKey := j.cfg.JwtSignatureKey
+	// Konversi token key ke byte array
+	tokenKey := []byte(j.cfg.JwtSignatureKey)
+
+	// Ambil ID user sebagai string
 	newId := strconv.Itoa(user.Id)
+
+	// Konversi slice Role menjadi slice string
+	var roleNames []string
+	for _, role := range user.Role {
+		roleNames = append(roleNames, role.Name)
+	}
+
+	// Buat claims
 	claims := modelUtil.JwtPayloadClaim{
 		RegisteredClaims: jwt.RegisteredClaims{
 			Issuer:    j.cfg.ApplicationName,
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(j.cfg.AccessTokenLifeTime)),
 		},
 		UserId: newId,
-		Role:   user.Role,
+		Role:   roleNames, // Gunakan array string untuk roles
 	}
 
+	// Buat token baru
 	jwtNewClaim := jwt.NewWithClaims(j.cfg.JwtSigningMethod, claims)
 	token, err := jwtNewClaim.SignedString(tokenKey)
 	if err != nil {
-		return "", nil
+		return "", err // Kembalikan error jika terjadi
 	}
 
 	return token, nil

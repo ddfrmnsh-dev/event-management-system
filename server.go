@@ -52,6 +52,7 @@ type Server struct {
 	eventUC          usecase.EventUseCase
 	ticketUC         usecase.TicketUseCase
 	orderUC          usecase.OrderUseCase
+	rbacUC           usecase.RbacUseCase
 	jwtService       service.JwtService
 	schedulerService scheduler.SchedulerService
 	engine           *gin.Engine
@@ -65,11 +66,12 @@ func (s *Server) initRoute() {
 	controller.NewAuthController(s.authUC, rgAuth).Route()
 
 	rgV1 := s.engine.Group("/api/v1")
-	authMiddleware := middleware.NewAuthMiddleware(s.jwtService)
+	authMiddleware := middleware.NewAuthMiddleware(s.jwtService, DB)
 	controller.NewUserController(s.userUC, rgV1, authMiddleware).Route()
 	controller.NewEventController(s.eventUC, rgV1, authMiddleware).Route()
 	controller.NewTicketController(s.ticketUC, rgV1, authMiddleware).Route()
 	controller.NewOrderController(s.orderUC, rgV1, authMiddleware).Route()
+	controller.NewRbacController(s.rbacUC, rgV1, authMiddleware).Route()
 
 	s.engine.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	s.engine.LoadHTMLGlob("templates/*")
@@ -92,6 +94,8 @@ func (s *Server) initRoute() {
 func (s *Server) initMigration() {
 	err := DB.AutoMigrate(
 		&models.User{},
+		&models.Role{},
+		&models.Permission{},
 		&models.Event{},
 		&models.Ticket{},
 		&models.Order{},
@@ -140,11 +144,13 @@ func NewServer() *Server {
 	eventRepo := repository.NewEventRepository(DB)
 	ticketRepo := repository.NewTicketRepository(DB)
 	orderRepo := repository.NewOrderRepository(DB)
+	rbacRepo := repository.NewRolePermissionRepository(DB)
 
 	userUseCase := usecase.NewUserUseCase(userRepo)
 	eventUseCase := usecase.NewEventUseCase(eventRepo, userRepo)
 	ticketUseCase := usecase.NewTicketUseCase(ticketRepo)
 	orderUseCase := usecase.NewOrderUseCase(orderRepo)
+	rbacUsecCase := usecase.NewRbacUseCase(rbacRepo)
 
 	jwtService := service.NewJwtService(cfg.TokenConfig)
 	schedulerJobs := jobs.NewSchedulerJobs(userUseCase)
@@ -160,6 +166,7 @@ func NewServer() *Server {
 		eventUC:          eventUseCase,
 		ticketUC:         ticketUseCase,
 		orderUC:          orderUseCase,
+		rbacUC:           rbacUsecCase,
 		engine:           engine,
 		jwtService:       jwtService,
 		schedulerService: schedulerService,

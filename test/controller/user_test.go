@@ -103,16 +103,16 @@ func TestCreateUser_Success(t *testing.T) {
 		Username: "John Doe",
 		Email:    "johndoe@example.com",
 		Password: "12345678", // password dalam teks biasa
-		Role:     "Admin",
+		// Role:     "Admin",
 	}
 
 	// MockUser yang dikembalikan oleh mock userUseCase
 	mockUser := models.User{
-		Id:        1, // ID ditambahkan oleh sistem
-		Username:  "John Doe",
-		Email:     "johndoe@example.com",
-		Password:  "hashedpassword123", // password sudah di-hash
-		Role:      "Admin",
+		Id:       1, // ID ditambahkan oleh sistem
+		Username: "John Doe",
+		Email:    "johndoe@example.com",
+		Password: "hashedpassword123", // password sudah di-hash
+		// Role:      "Admin",
 		IsActive:  nil,        // misalnya di-set sesuai default dalam logika backend
 		CreatedAt: time.Now(), // waktu saat user dibuat
 		UpdatedAt: time.Now(), // waktu saat user dibuat pertama kali
@@ -202,7 +202,7 @@ func TestCreateUser_InternalServerError(t *testing.T) {
 		Username: "John Doe",
 		Email:    "johndoe@example.com",
 		Password: "12345678", // password dalam teks biasa
-		Role:     "Admin",
+		// Role:     "Admin",
 	}
 
 	// Mocking kesalahan saat penyimpanan
@@ -239,7 +239,7 @@ func TestFindUserById_Success(t *testing.T) {
 		Id:       userID,
 		Username: "John Doe",
 		Email:    "johndoe@example.com",
-		Role:     "Admin",
+		// Role:     "Admin",
 		IsActive: nil,
 	}
 

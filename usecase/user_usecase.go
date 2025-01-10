@@ -82,9 +82,9 @@ func (uc *userUseCaseImpl) CreateUser(input models.User) (models.User, error) {
 		missingFields = append(missingFields, "Password")
 	}
 
-	if strings.TrimSpace(input.Role) == "" {
-		missingFields = append(missingFields, "Role")
-	}
+	// if strings.TrimSpace(input.Role) == "" {
+	// 	missingFields = append(missingFields, "Role")
+	// }
 
 	if len(missingFields) > 0 {
 		return user, fmt.Errorf("inputan %s tidak boleh string kosong", strings.Join(missingFields, ", "))
@@ -134,9 +134,9 @@ func (uc *userUseCaseImpl) UpdateUser(inputId models.GetCustomerDetailInput, use
 		checkUser.Password = string(hashPassword)
 	}
 
-	if strings.TrimSpace(user.Role) != "" {
-		checkUser.Role = user.Role
-	}
+	// if strings.TrimSpace(user.Role) != "" {
+	// 	checkUser.Role = user.Role
+	// }
 
 	if user.IsActive != nil {
 		checkUser.IsActive = user.IsActive

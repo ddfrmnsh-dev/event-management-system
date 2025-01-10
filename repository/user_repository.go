@@ -79,7 +79,7 @@ func (u *userRepositoryImpl) FindByArray(params string, value bool) ([]models.Us
 func (u *userRepositoryImpl) FindBySingle(column, value string) (models.User, error) {
 	var user models.User
 
-	res := u.db.Where(fmt.Sprintf("%s = ?", column), value).First(&user)
+	res := u.db.Preload("Role.Permissions").Where(fmt.Sprintf("%s = ?", column), value).First(&user)
 	if res.Error != nil {
 		return user, res.Error
 	}

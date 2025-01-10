@@ -42,7 +42,7 @@ func (c *Config) readConfig() error {
 	c.DBConfig = DBConfig{
 		Host:     "localhost",
 		Port:     "5432",
-		Database: "evm_tools",
+		Database: "evm_tools_v2",
 		Username: "postgres",
 		Password: "root",
 		Driver:   "postgres",
