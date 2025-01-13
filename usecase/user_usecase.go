@@ -21,6 +21,7 @@ type UserUseCase interface {
 	FindUserByUsername(username string) (models.User, error)
 	FindUserByEmail(email string) (models.User, error)
 	FinByParams(params string, value bool) ([]models.User, error)
+	AddRoleToUser(userId int, roleId []int) (models.User, error)
 }
 
 type userUseCaseImpl struct {
@@ -178,4 +179,12 @@ func (uc *userUseCaseImpl) FindAllEventUser() ([]models.User, error) {
 	}
 
 	return users, nil
+}
+
+func (uc *userUseCaseImpl) AddRoleToUser(userId int, roleId []int) (models.User, error) {
+	user, err := uc.userRepository.AddRoleToUser(userId, roleId)
+	if err != nil {
+		return user, err
+	}
+	return user, nil
 }

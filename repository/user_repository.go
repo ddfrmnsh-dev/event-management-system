@@ -18,6 +18,7 @@ type UserRepository interface {
 	FindByEmail(email string) (models.User, error)
 	FindByArray(params string, value bool) ([]models.User, error)
 	FindBySingle(column, value string) (models.User, error)
+	AddRoleToUser(userId int, roleId []int) (models.User, error)
 }
 
 type userRepositoryImpl struct {
@@ -180,4 +181,28 @@ func (u *userRepositoryImpl) FindAllUserEvent() ([]models.User, error) {
 	}
 
 	return users, nil
+}
+
+func (u *userRepositoryImpl) AddRoleToUser(userId int, roleId []int) (models.User, error) {
+	var user models.User
+
+	if err := u.db.First(&user, userId).Error; err != nil {
+		return user, err
+	}
+
+	var roles []models.Role
+
+	if err := u.db.Where("id IN ?", roleId).Find(&roles).Error; err != nil {
+		return user, err
+	}
+
+	if err := u.db.Model(&user).Association("Role").Append(&roles); err != nil {
+		return user, err
+	}
+
+	if err := u.db.Preload("Role").First(&user, userId).Error; err != nil {
+		return user, err
+	}
+
+	return user, nil
 }

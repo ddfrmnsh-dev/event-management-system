@@ -24,10 +24,11 @@ func NewUserController(userUseCase usecase.UserUseCase, rg *gin.RouterGroup, aut
 }
 
 func (uc *UserController) Route() {
-	uc.rg.GET("/users", uc.authMiddleware.RequireToken("admin", "Organization"), uc.getAllUser)
+	uc.rg.GET("/users", uc.authMiddleware.RequireToken("admin", "Organization", "super admin"), uc.getAllUser)
 	uc.rg.GET("/users/:id", uc.authMiddleware.RequireToken("admin"), uc.getUserById)
 	uc.rg.GET("/users/events", uc.authMiddleware.RequireToken("admin", "Organization"), uc.getAllEventUser)
 	uc.rg.POST("/users", uc.authMiddleware.RequireToken("admin"), uc.createUser)
+	uc.rg.POST("/users/assignRole", uc.authMiddleware.RequireToken("admin", "super admin"), uc.addRoleToUser)
 	uc.rg.PUT("/users/:id", uc.authMiddleware.RequireToken("admin"), uc.updateUser)
 	uc.rg.DELETE("/users/:id", uc.authMiddleware.RequireToken("admin"), uc.deleteUser)
 }
@@ -165,4 +166,22 @@ func (uc *UserController) getAllEventUser(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusOK, modelUtil.APIResponse("List event user empty", nil, false))
 
+}
+
+func (uc *UserController) addRoleToUser(ctx *gin.Context) {
+	var payload models.PayloadRoleUser
+
+	if err := ctx.ShouldBindBodyWithJSON(&payload); err != nil {
+		fmt.Println("Err JSON:", err.Error())
+		ctx.JSON(http.StatusBadRequest, gin.H{"err": err.Error()})
+		return
+	}
+
+	role, err := uc.userUseCase.AddRoleToUser(payload.UserId, payload.RoleId)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, modelUtil.APIResponse(err.Error(), nil, false))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, modelUtil.APIResponse("Success add role to user", role, true))
 }

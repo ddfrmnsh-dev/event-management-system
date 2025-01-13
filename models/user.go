@@ -20,6 +20,10 @@ type User struct {
 	Role      []Role    `gorm:"many2many:user_has_roles;constraint:OnDelete:CASCADE"`
 }
 
+type PayloadRoleUser struct {
+	UserId int   `json:"userId" binding:"required"`
+	RoleId []int `json:"roleId" binding:"required"`
+}
 type PayloadRole struct {
 	RoleId       int   `json:"roleId" binding:"required"`
 	PermissionId []int `json:"permissionId" binding:"required"`
